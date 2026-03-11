@@ -3,12 +3,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import sqlite3
+import mysql.connector
+from sqlalchemy import create_engine
 
 plt.style.use('default')
 
 # Load CSV file
-df = pd.read_csv(r'Major-Project\ecommerce_sales_data.csv',encoding='utf-8')
+df = pd.read_csv(r'ecommerce_sales_data.csv',encoding='utf-8')
 
 # Peek at data
 print(df.head())
@@ -61,6 +62,7 @@ plt.show()
 conn = sqlite3.connect('ecommerce.db')
 df.to_sql('sales', conn, if_exists='replace', index=False)
 
+# Query 1 (MySQL compatible)
 query1 = '''
 SELECT Category,
        SUM(TotalSales) AS TotalRevenue
@@ -69,9 +71,11 @@ GROUP BY Category
 ORDER BY TotalRevenue DESC
 LIMIT 5
 '''
+
 top_categories = pd.read_sql(query1, conn)
 print(top_categories)
 
+# Query 2 (MySQL compatible)
 query2 = '''
 SELECT CustomerID,
        SUM(TotalSales) AS CustomerRevenue
@@ -84,8 +88,9 @@ LIMIT 10
 top_customers = pd.read_sql(query2, conn)
 print(top_customers)
 
+# Query 3 (MySQL syntax used instead of SQLite strftime)
 query3 = '''
-SELECT strftime('%Y-%m', OrderDate) AS Month,
+SELECT DATE_FORMAT(OrderDate, '%Y-%m') AS Month,
        COUNT(OrderID) AS Orders
 FROM sales
 GROUP BY Month
